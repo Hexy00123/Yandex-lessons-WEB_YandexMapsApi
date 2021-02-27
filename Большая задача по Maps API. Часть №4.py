@@ -30,9 +30,8 @@ class Window(QtWidgets.QWidget):
                 button.setChecked(True)
             button.setText(text)
             button.move(350, num * 15)
-
             button.released.connect(self.update_type_of_map)
-
+            button.setFocusPolicy(QtCore.Qt.NoFocus)
             self.rad_buttons.append(button)
 
     def get_image(self):
