@@ -2,31 +2,32 @@ import os
 import sys
 import shutil
 import requests
-from PyQt5 import QtCore, QtWidgets, QtGui
-
+from PyQt5 import QtCore, QtWidgets, QtGui, Qt
 
 
 class Window(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.getImage()
+        self.map_size = 17
+
+        self.get_image()
         self.initUI()
+        self.update()
 
     def initUI(self):
         self.setGeometry(100, 100, 450, 450)
-        self.setWindowTitle('Отображение карты')
+        self.setWindowTitle('Большая задача по яндекс картам')
 
-        self.pixmap = QtGui.QPixmap(self.map_file)
+        self.pixmap = QtGui.QPixmap()
         self.image = QtWidgets.QLabel(self)
         self.image.resize(450, 450)
-        self.image.setPixmap(self.pixmap)
 
-    def getImage(self):
+    def get_image(self):
         response = requests.request(method='GET',
                                     url='https://static-maps.yandex.ru/1.x/',
                                     params={
                                         'll': '50.191374,53.217203',
-                                        'spn': '0.001500,0.001500',
+                                        'z': f'{self.map_size}',
                                         'l': 'sat',
                                         'size': '450,450'
                                     })
@@ -36,14 +37,24 @@ class Window(QtWidgets.QWidget):
             print("Http статус:", response.status_code, "(", response.reason, ")")
             sys.exit(1)
 
-        try:
-            open('data/map.png')
-        except:
-            os.mkdir('data')
+        return response.content
 
-        self.map_file = "data/map.png"
-        with open(self.map_file, "wb") as file:
-            file.write(response.content)
+    def update(self):
+        image = self.get_image()
+        self.pixmap.loadFromData(image)
+
+        self.image.setPixmap(self.pixmap)
+
+    def keyPressEvent(self, event):
+        if event.key() == 16777238:
+            if self.map_size + 1 <= 17:
+                self.map_size += 1
+        elif event.key() == 16777239:
+            if self.map_size - 1 >= 1:
+                self.map_size -= 1
+
+        self.update()
+        event.accept()
 
     def closeEvent(self, event):
         shutil.rmtree('data')
