@@ -17,7 +17,7 @@ class Window(QtWidgets.QWidget):
         self.update()
 
     def initUI(self):
-        self.setGeometry(100, 100, 450, 500)
+        self.setGeometry(100, 100, 450, 550)
         self.setWindowTitle('Большая задача по яндекс картам')
 
         self.pixmap = QtGui.QPixmap()
@@ -48,6 +48,9 @@ class Window(QtWidgets.QWidget):
         self.button_delete = QtWidgets.QPushButton(self, text='Сброс ')
         self.button_delete.setGeometry(225, 5, 60, 40)
         self.button_delete.clicked.connect(self.delete)
+
+        self.label = QtWidgets.QLabel(self)
+        self.label.setGeometry(0, 500, 450, 50)
 
     def get_image(self):
         response = requests.request(method='GET',
@@ -96,10 +99,14 @@ class Window(QtWidgets.QWidget):
                                         })
 
             if response.status_code == 200:
-                coords = list(map(float, response.json()['response']['GeoObjectCollection'][
-                    'featureMember'][0][
-                    'GeoObject']['Point']['pos'].split()))
+                result = response.json()['response']['GeoObjectCollection']['featureMember'][0][
+                    'GeoObject']
+
+                coords = list(map(float, result['Point']['pos'].split()))
+                addres = result['metaDataProperty']['GeocoderMetaData']['text']
+
                 self.ll = coords
+                self.label.setText(f'Адрес: {addres}')
                 if f'{coords[0]},{coords[1]},round' not in self.pt:
                     self.pt.append(f'{coords[0]},{coords[1]},round')
                 self.update()
@@ -116,6 +123,7 @@ class Window(QtWidgets.QWidget):
                                         })
 
             if response.status_code == 200:
+                self.label.setText('')
                 coords = list(map(float, response.json()['response']['GeoObjectCollection'][
                     'featureMember'][0][
                     'GeoObject']['Point']['pos'].split()))
