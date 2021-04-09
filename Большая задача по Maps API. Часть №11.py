@@ -19,6 +19,8 @@ class Window(QtWidgets.QWidget):
         self.initUI()
         self.update()
         self.center = [224, 273]
+        self.x_size = 100000
+        self.y_size = 150000
 
     def initUI(self):
         self.setGeometry(100, 100, 450, 550)
@@ -55,10 +57,6 @@ class Window(QtWidgets.QWidget):
 
         self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(5, 500, 400, 50)
-
-        # self.is_index = QtWidgets.QCheckBox(self, text='Отображение почтового\n индекса')
-        # self.is_index.move(300, 515)
-        # self.is_index.clicked.connect(self.search)
 
     def get_image(self):
         response = requests.request(method='GET',
@@ -140,13 +138,17 @@ class Window(QtWidgets.QWidget):
 
     def keyPressEvent(self, event):
         move_value = 180 / (2 ** self.map_size)
-
         if event.key() == 16777238:  # pgup
             if self.map_size + 1 <= 17:
                 self.map_size += 1
+                self.x_size *= 2
+                self.y_size *= 2
+
         elif event.key() == 16777239:  # pgdown
             if self.map_size - 1 >= 1:
                 self.map_size -= 1
+                self.x_size /= 2
+                self.y_size /= 2
 
         elif event.key() == 16777235:  # up
             self.ll[1] += move_value
@@ -168,8 +170,8 @@ class Window(QtWidgets.QWidget):
 
     def clickOnMap(self, a0):
         if a0.button() == Qt.LeftButton:
-            l_x = (a0.x() - self.center[0]) / 100000
-            l_y = (a0.y() - self.center[1]) / 150000
+            l_x = (a0.x() - self.center[0]) / self.x_size
+            l_y = (a0.y() - self.center[1]) / self.y_size
             self.pt = [f'{self.ll[0] + l_x},{self.ll[1] - l_y},round']
             response = requests.request(method='GET',
                                         url='https://static-maps.yandex.ru/1.x/',
